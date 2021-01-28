@@ -89,6 +89,6 @@ export default {
   }
   .card:hover {
     transition: all 0.3s ease;
-    background-color: #e62429!important;
+    background-color: #851014!important;
   }
 </style>
