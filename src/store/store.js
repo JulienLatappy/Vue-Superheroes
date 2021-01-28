@@ -100,7 +100,8 @@ export default new Vuex.Store({
             commit
         }, payload ) {
             commit('setMessage', payload)
-        }
+        },
+        
     },
     plugins: [createPersistedState({
         storage: {

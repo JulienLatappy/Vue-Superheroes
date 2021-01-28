@@ -33,7 +33,6 @@ export default {
   .container {
     min-height:100vh;
     background: rgb(124,24,4);
-    background: linear-gradient(262deg, rgba(124,24,4,1) 0%, rgba(189,25,17,1) 42%, rgba(175,53,6,1) 100%);
   }
   .alert {
     position:absolute;
