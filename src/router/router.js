@@ -9,7 +9,6 @@ const routes = [
         redirect: '/Dashboard'
     },
     {
-        name: 'appContainer',
         path: '/Dashboard',
         component: () => import('../pages/AppContainer.vue'),
         children: [

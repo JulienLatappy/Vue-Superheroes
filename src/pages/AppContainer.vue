@@ -32,7 +32,7 @@ export default {
 
   .container {
     min-height:100vh;
-    background: rgb(124,24,4);
+    background: rgb(5, 3, 39);
   }
   .alert {
     position:absolute;

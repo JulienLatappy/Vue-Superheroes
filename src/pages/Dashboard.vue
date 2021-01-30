@@ -1,13 +1,48 @@
 <template>
   <div class="dashboardContainer">
+    <div style="display:flex;flex-direction: row;justify-content: space-between">
       <h1>Dashboard</h1>
+      <div style="padding: 5px; display:flex;flex-direction: row">
+        <div style="margin:5px;">
+          <v-btn dark  color="#851616" v-if="isCard" @click="changeDisposition">{{$t('toList')}}</v-btn>
+          <v-btn dark  color="#851616" v-if="isList" @click="changeDisposition">{{$t('toCard')}}</v-btn>
+        </div>
+        <div style="margin: 5px;">
+          <v-menu offset-y>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                color="#851616"
+                dark
+                v-bind="attrs"
+                v-on="on"
+              >
+                {{$t('sortBy')}} {{currentSort}}/{{currentSortDir}}<v-icon>mdi-arrow-{{currentSortDir}}</v-icon>
+              </v-btn>
+              
+            </template>
+            <v-list>
+              <v-list-item
+                class="listitem"
+                color="#851616"
+                v-for="(item, index) in items"
+                :key="index"
+                @click="sort(item.params)"
+              >
+                <v-list-item-title >{{ item.title }}</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </div>
+      </div>
+    </div>
       <p style="color:white;opacity: 60%;" class="font-weight-bold">
-        Tout vos héros favoris sont ici !
+        {{$t('dashboardPageSubtitle')}}
       </p>
       <v-btn @click="getData" depressed dark>
       Normal
     </v-btn>
-    <div v-if="getFavoriteHeroesList">
+    <transition name="fade" mode="out-in">
+      <div key=1 v-if="getFavoriteHeroesList && isCard && !isList">
       <v-row
         no-gutters
       >
@@ -20,33 +55,84 @@
           v-for="hero in getFavoriteHeroesList"
           :key="hero.id"
         >
-        <transition name="fade">
-            <heroCard :hero="hero" :isfavorite='true'/> 
-        </transition>
+        <heroCard :hero="hero" :isfavorite='true'/> 
        </v-col>
       </v-row>
-    </div>
+      </div>
+      <div v-if="getFavoriteHeroesList && isList && !isCard">
+      <heroRow 
+        v-for="hero in getFavoriteHeroesList"
+        :key="hero.id" 
+        :hero="hero" 
+        :isfavorite='true' />
+      </div>
+    </transition>>
   </div>
 </template>
 
 <script>
 import heroCard from '../components/heroCard.vue';
+import heroRow from '../components/heroRow.vue';
 
+import { mapState } from 'vuex';
 
 export default {
     name :'Dashboard',
+    data() {
+      return {
+        list_of_favorite_heroes: [],
+        isCard: true,
+        isList: false,
+        items: 
+          [
+            { title: 'Trier par noms', params: 'name',},
+            { title: 'Trier par id', params: 'id'},
+          ],
+        currentSort: 'name',
+        currentSortDir:'up',
+      }
+    },
     components: {
-      heroCard
+      heroCard,
+      heroRow
     },
     methods: {
       getData() {
         this.$store.dispatch("GET_HEROES_LIST")
       },
+      changeDisposition() {
+        this.isCard = !this.isCard
+        this.isList = !this.isList
+      },
+      sort(params){
+        if(params === this.currentSort) {
+          this.currentSortDir = this.currentSortDir==='up'?'down':'up';
+        }
+        this.currentSort = params;
+      },
     },
     computed: {
+      ...mapState([
+        'searchQuery'
+      ]),
       getFavoriteHeroesList() {
-        return this.$store.getters.getHeroesFavoriteList
+        if (this.searchQuery) {
+          return this.list_of_favorite_heroes.filter((hero)=>{
+            return hero.name.toLowerCase().includes(this.searchQuery.toLowerCase());
+          })
+        }else {
+          return this.list_of_favorite_heroes.slice().sort((a,b) => {
+          let modifier = 1;
+          if(this.currentSortDir === 'down') modifier = -1;
+          if(a[this.currentSort] < b[this.currentSort]) return -1 * modifier;
+          if(a[this.currentSort] > b[this.currentSort]) return 1 * modifier;
+          return 0;
+        });
+        }
       }
+    },
+    mounted() {
+      this.list_of_favorite_heroes = this.$store.getters.getHeroesFavoriteList
     }
 }
 </script>
