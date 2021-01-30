@@ -1,6 +1,6 @@
 <template>
     <div class="heroProfilContainer">
-      <h1>Page du héros {{this.$route.params.name}}</h1>
+      <h1>{{$t('title')}} {{this.$route.params.name}}</h1>
       <v-sheet
         color="white"
         elevation="10"
@@ -11,7 +11,8 @@
       >
         <div style="height:100%;width:100%;">
           <div style="height:100%;width:40%;float:left">
-            <img style="height:100%;width:100%;border-radius: 0.5em 0em 0em 0.5em;" :src="`${hero_to_visit.thumbnail.path}.${hero_to_visit.thumbnail.extension}`" alt="Hero pic">
+            <img v-if="!imgFile" style="height:100%;width:100%;border-radius: 0.5em 0em 0em 0.5em;" :src="getHeroPics" alt="Hero pic">
+            <img v-else style="height:100%;width:100%;border-radius: 0.5em 0em 0em 0.5em;" :src="imgFile" alt="Hero pic">
           </div>
           <div v-if="!isEditing" style="background-color: #151515;height:100%;width:60%;float:right;">
             <div style="padding:30px;">
@@ -22,34 +23,35 @@
                 </span>
               </h1>
               <h3 class="descriptionText" v-if="hero_to_visit.description" >{{hero_to_visit.description}}</h3>
-              <h3 class="descriptionText" v-else >Aucune description.</h3>
+              <h3 class="descriptionText" v-else >{{$t('noHeroDescription')}}</h3>
             </div>
             <div style="display:flex;justify-content: flex-end;background-grey;width:100%;margin-top:250px;">
-              <v-btn class="button" @click="editHero()">Editer le héro</v-btn>
-              <v-btn class="button">Effacer les informations</v-btn>
+              <v-btn class="button" @click="editHero()">{{$t('editHero')}}</v-btn>
+              <v-btn class="button" @click="editHero()">{{$t('deleteHeroData')}}</v-btn>
             </div>
           </div>
           <div v-else style="background-color: #151515;height:100%;width:60%;float:right;padding:100px;">
             <form>
               <v-text-field
                 v-model="name"
-                label="Hero's name"
+                label="Name"
+                :placeholder="hero_to_visit.name"
                 dark
                 required
-                @input="$v.name.$touch()"
-                @blur="$v.name.$touch()"
               ></v-text-field>
-              <v-text-field
+              <v-textarea
                 v-model="description"
+                :placeholder="hero_to_visit.description"
                 label="Description"
+                auto-grow
+                rows="2"
+                row-height="30"
                 dark
                 required
-                @input="$v.description.$touch()"
-                @blur="$v.description.$touch()"
-              ></v-text-field>
+              ></v-textarea>
               <v-file-input
                 dark
-                v-model="img"
+                @change="onFileSelected"
                 truncate-length="15"
               ></v-file-input>
 
@@ -57,12 +59,12 @@
                 class="mr-4"
                 @click="submit"
               >
-                submit
+                {{$t('submit')}}
               </v-btn>
               <v-btn @click="clear">
-                clear
+                {{$t('clear')}}
               </v-btn>
-              <v-btn class="button" @click="editHero()">Retour</v-btn>
+              <v-btn class="button" @click="editHero()">{{$t('back')}}</v-btn>
             </form>
           </div>
         </div>
@@ -80,7 +82,9 @@ export default {
       isEditing : false,
       name: '',
       description: '',
-      img: ''
+      imgFile: '',
+      PictureInB64: "",
+      heroId: null
     }
   },
   methods: {
@@ -90,28 +94,68 @@ export default {
     editHero() {
       this.isEditing = !this.isEditing
     },
+    async onFileSelected(event) {
+        let File = event
+        this.PictureInB64 = await this.toDataURL(File)
+        this.imgFile = `data:image/png;base64,${this.PictureInB64}`
+    },
+    toDataURL: async function(Picture) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(Picture);
+            reader.onload = () => resolve(reader.result.replace(/^data:image\/[a-z]+;base64,/, ""));
+            reader.onerror = error => reject(error);
+        });
+    },
     submit () {
-      const payload = {
-        name: '',
-        description: '',
-        img: ''
+      const message = "Héro modifié avec succès."
+      if (this.imgFile){
+        console.log('with img update')
+        const payloadwWithImg = {
+          name: this.name,
+          description: this.description,
+          img: this.imgFile,
+          heroId : this. heroId
+        }
+        this.$store.dispatch('UPDATE_HERO_DATA', payloadwWithImg)
+      }else {
+        console.log('without img update')
+        const payloadWithoutImg = {
+          name: this.name,
+          description: this.description,
+          heroId : this. heroId
+        }
+        this.$store.dispatch('UPDATE_HERO_DATA', payloadWithoutImg)
       }
-      this.$store.dispatch('UPDATE_HERO_DATA', payload)
+      this.$store.commit ('setMessage', message)
     },
     clear () {
-        this.$v.$reset()
         this.name = ''
         this.description = ''
-        this.img = null
+        this.imgFile = ''
     },
+    setData() {
+      this.name = this.hero_to_visit.name,
+      this.description = this.hero_to_visit.description,
+      this.heroId = this.hero_to_visit.id
+    }
   },
   computed: {
     ...mapState([
       'hero_to_visit'
-    ])
+    ]),
+    getHeroPics() {
+      let src
+        if (this.hero_to_visit.isImgModified) {
+          src = `${this.hero_to_visit.thumbnail.path}`
+        }else {
+          src = `${this.hero_to_visit.thumbnail.path}.${this.hero_to_visit.thumbnail.extension}` 
+        }
+        return src
+      }
   },
-  mounted: function() {
-    
+  mounted() {
+    this.setData()
   }
 }
 </script>

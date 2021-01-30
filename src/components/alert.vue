@@ -5,6 +5,7 @@
             color="success"
             dark
             border="top"
+            class="alert"
             transition="scale-transition"
         >
             {{message}}
@@ -30,5 +31,7 @@ export default {
 </script>
 
 <style>
-
+    .alert {
+        z-index:100
+    }
 </style>

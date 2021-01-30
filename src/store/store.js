@@ -11,12 +11,13 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
     state: {
-       list_of_heroes : null,
+       list_of_heroes : [],
        heroes_favorite_list: [],
        hero_to_visit: null,
        hero_data: null,
        message: '',
-       alertState: false
+       alertState: false,
+       searchQuery: ''
     },
     getters: {
         getDataForHeroespage: (state) => {
@@ -53,9 +54,22 @@ export default new Vuex.Store({
             let index
             if ((index = state.heroes_favorite_list.findIndex(hero => hero.id === payload)) != -1)
                 state.heroes_favorite_list.splice(index, 1)
-            const hero = state.list_of_heroes.find(hero => (hero.id === payload.id))
-            console.log(hero)
-            // state.list_of_heroes.find(hero => (hero.id === payload.id)).isFavorite = false  
+        },
+        update_hero_data(state,payload) {
+            const heroesList = state.list_of_heroes;
+            const hero = heroesList.results.find(hero => (hero.id === payload.heroId));
+            hero.name = payload.name
+            hero.description = payload.description
+            console.log(hero,payload)
+            if (payload.img) {
+                if (hero.thumbnail.path !== payload.img) {
+                    hero.thumbnail.path = payload.img
+                    hero.isImgModified = true               
+                }
+            }
+        },
+        set_query(state,message) {
+            state.searchQuery = message            
         },
         setMessage(state,payload) {
             state.message = payload
@@ -96,12 +110,21 @@ export default new Vuex.Store({
                 console.log(err)
             })
         },
+        ADD_HERO_TO_FAVORITE_LIST ({
+            commit
+        }, payload) {
+            commit('add_hero_to_favorite_list', payload)
+        },
         SET_MESSAGE ({
             commit
         }, payload ) {
             commit('setMessage', payload)
         },
-        
+        UPDATE_HERO_DATA ({
+            commit
+        }, payload) {
+            commit('update_hero_data', payload)
+        } 
     },
     plugins: [createPersistedState({
         storage: {
