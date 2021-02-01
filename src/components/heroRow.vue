@@ -15,17 +15,17 @@
                 <span>{{$t('noHeroDescription')}}</span>
             </div>
             <v-card-actions class="buttonsRow">
-                <v-btn v-if="!isfavorite && !hero.isFavorite"
-                    @click="addToFavoriteList(hero)"
+                <v-btn v-if="!hero.isFavorite"
+                    @click.stop="addToFavoriteList(hero)"
                     color="grey lighten-2"
                 > {{$t('addToFavorite')}} <v-icon style="color: #19bb20" >mdi-plus</v-icon>
                 </v-btn>
-                <v-btn v-if="isfavorite"
-                    @click="removeHeroFromFavoriteList(hero.id)"
+                <v-btn v-if="hero.isFavorite && this.$route.path === '/Dashboard'"
+                    @click.stop="removeHeroFromFavoriteList(hero.id)"
                     color="grey lighten-2"
                 > {{$t('deleteFromFavorite')}} <v-icon style="color: rgba(189,25,17,1)">mdi-delete</v-icon>
                 </v-btn>
-                <v-btn v-if="!isfavorite && isHeroFavorite"
+                <v-btn v-if="hero.isFavorite && this.$route.path === '/Heroes'"
                     color="grey lighten-2"
                 > {{$t('alreadyAddToFavorite')}} <v-icon style="color #151515">mdi-check</v-icon>
                 </v-btn>
@@ -33,8 +33,8 @@
             <div class="heroImgContainer">
                 <v-img
                     class="heroImg"
+                    :lazy-src="getHeroPics"
                     :src="getHeroPics"
-                    @click="goToHeroProfil(hero)"
                 ></v-img>
             </div>
         </v-row>
@@ -46,7 +46,6 @@ export default {
     name : 'heroRow',
     props: [
         'hero',
-        'isfavorite'
     ],
     methods: {
         goToHeroProfil(hero) {
@@ -123,8 +122,5 @@ export default {
       margin-top:12px;
       height: 175px;
       border-radius: 0.5em;
-  }
-  .buttonsRow {
-    float:   
   }
 </style>

@@ -17,7 +17,9 @@ export default new Vuex.Store({
        hero_data: null,
        message: '',
        alertState: false,
-       searchQuery: ''
+       searchQuery: '',
+       alreadyGetHero : false
+       
     },
     getters: {
         getDataForHeroespage: (state) => {
@@ -34,11 +36,23 @@ export default new Vuex.Store({
             }else {
                 return false
             }
-        }   
+        },
+        getCount: (state) => {
+            if(state.list_of_heroes){
+                return state.list_of_heroes.count
+            }else {
+                return 0
+            }
+        }
     },
     mutations: {
         set_list_of_heroes(state,payload) {
             state.list_of_heroes = payload
+        },
+        set_more_heroes_to_list(state,payload) {
+            const list = state.list_of_heroes
+            list.count += payload.count
+            list.results.push(...payload.results)
         },
         setHero(state, payload) {
             state.hero_to_visit = payload
@@ -47,13 +61,26 @@ export default new Vuex.Store({
             state.hero_data = payload
         },
         add_hero_to_favorite_list(state,payload) {
-            payload.isFavorite = true
-            state.heroes_favorite_list.push(payload)        
+            const favlist = state.heroes_favorite_list
+            const herolist = state.list_of_heroes
+
+            if(favlist.find(hero => hero.id === payload.id)) {
+                return console.log('Héro déjà ajouté')
+            }else {
+                const hero = herolist.results.find(hero => (hero.id === payload.id));
+                Vue.set(payload, 'isFavorite',true)
+                Vue.set(hero, 'isFavorite',true)
+                favlist.push(payload)        
+            }
         },
         remove_hero_from_favorite_list(state,payload) {
             let index
-            if ((index = state.heroes_favorite_list.findIndex(hero => hero.id === payload)) != -1)
-                state.heroes_favorite_list.splice(index, 1)
+            const favlist = state.heroes_favorite_list
+            
+            if ((index = favlist.findIndex(hero => hero.id === payload)) != -1)
+                console.log(favlist[index])
+                favlist[index].isFavorite = false
+                favlist.splice(index, 1)
         },
         update_hero_data(state,payload) {
             const heroesList = state.list_of_heroes;
@@ -84,20 +111,36 @@ export default new Vuex.Store({
             state.heroes_favorite_list = []
             state.hero_to_visit = null
             state.hero_data = null
+            state.alertState = false
+            state.message = ''
+            state.alreadyGetHero = false
+        },
+        alreadyGetHero(state) {
+            state.alreadyGetHero = true
         }
     },
     actions: {
         GET_HEROES_LIST ({
             commit
         }) {
-           axios.get(`${settings.API_URL}/v1/public/characters?limit=20&${settings.API_KEY}`,{
-            limit: 20
-           })
-           .then((res) => {
-               commit('set_list_of_heroes', res.data.data)
-           }).catch((err) => {
-               console.log(err)
-           })
+            axios.get(`${settings.API_URL}/v1/public/characters?limit=20&${settings.API_KEY}`)
+            .then((res) => {
+                commit('set_list_of_heroes', res.data.data)
+            }).catch((err) => {
+                console.log(err)
+            })
+        },
+        GET_MORE_HEROES_LIST ({
+            commit,
+            state
+        }) {
+            const offset = state.list_of_heroes.count
+            axios.get(`${settings.API_URL}/v1/public/characters?limit=100&offset=${offset}&${settings.API_KEY}`)
+            .then((res) => {
+                commit('set_more_heroes_to_list', res.data.data)
+            }).catch((err) => {
+                console.log(err)
+            })
         },
         GET_HERO_DATA ({
             commit,

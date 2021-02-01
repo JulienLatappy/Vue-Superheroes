@@ -16,7 +16,9 @@ export default {
 
         /// HEROES PAGE ///
         heroesPageTitle: 'Cette page vous permet de découvrir les héros Marvel !',
-        
+        resultByPage:'Résultats par page',
+        loadMoreHeros:'Plus de héros ?',
+
         /// HEROES CARD/LIST ///
         noHeroDescription: 'Aucune description pour ce héro.',
         addToFavorite: 'Ajouter aux favoris',
@@ -47,6 +49,8 @@ export default {
 
         /// HEROES PAGE ///
         heroesPageTitle: 'This page allows you to discover the Marvel heroes!',
+        resultByPage:'Result by page',
+        loadMoreHeros:'More Heros ?',
 
         /// HEROES CARD/LIST ///
         noHeroDescription: 'No description pour ce hero.',

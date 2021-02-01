@@ -91,9 +91,16 @@ export default {
     text-decoration: none;
     color:white;
   }
+  .linkNavBar {
+    padding: 10px;
+    border-radius: 0.5em;
+  }
   .linkNavBar:hover{
     border-bottom: 1px solid white;
     cursor:pointer;
+    background-color: white;
+    color:black;
+    
   }
   .text {
     color:white;
