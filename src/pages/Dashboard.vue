@@ -2,7 +2,7 @@
   <div class="dashboardContainer">
     <div style="display:flex;flex-direction: row;justify-content: space-between">
       <h1>Dashboard</h1>
-      <div style="padding: 5px; display:flex;flex-direction: row">
+      <div style=" display:flex;flex-direction: row">
         <div style="margin:5px;">
           <v-btn dark  color="#851616" v-if="isCard" @click="changeDisposition">{{$t('toList')}}</v-btn>
           <v-btn dark  color="#851616" v-if="isList" @click="changeDisposition">{{$t('toCard')}}</v-btn>
@@ -38,9 +38,6 @@
       <p style="color:white;opacity: 60%;" class="font-weight-bold">
         {{$t('dashboardPageSubtitle')}}
       </p>
-      <v-btn @click="getData" depressed dark>
-      Normal
-    </v-btn>
     <transition name="fade" mode="out-in">
       <div key=1 v-if="getFavoriteHeroesList && isCard && !isList">
       <v-row
@@ -98,6 +95,7 @@ export default {
     },
     methods: {
       getData() {
+        this.$store.commit('alreadyGetHero')
         this.$store.dispatch("GET_HEROES_LIST")
       },
       changeDisposition() {
@@ -113,7 +111,8 @@ export default {
     },
     computed: {
       ...mapState([
-        'searchQuery'
+        'searchQuery',
+        'alreadyGetHero'
       ]),
       getFavoriteHeroesList() {
         if (this.searchQuery) {
@@ -132,6 +131,10 @@ export default {
       }
     },
     mounted() {
+      console.log(this.alreadyGetHero)
+      if(!this.alreadyGetHero){
+        this.getData()
+      }
       this.list_of_favorite_heroes = this.$store.getters.getHeroesFavoriteList
     }
 }
